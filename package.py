@@ -10,7 +10,7 @@ import zipfile
 sys.dont_write_bytecode = True
 from install import FILES
 
-RELEASE_FILES = FILES + ('connections.example.json', 'test_rdp.py', 'test_install.py',
+RELEASE_FILES = FILES + ('connections.example.json', 'test_rdp.py', 'test_install.py', 'test_i18n.py',
                          'package.py', 'PUBLISHING.md')
 
 

@@ -3,6 +3,7 @@
 Passwords never pass through QML, command arguments, files or stdout.
 """
 import gi
+from i18n import tr
 
 gi.require_version('Secret', '1')
 from gi.repository import Secret, GLib
@@ -29,7 +30,7 @@ class Keyring:
         try:
             return function(*args)
         except GLib.Error:
-            raise KeyringError('Nyckelringen kunde inte öppnas. Lås upp den och försök igen.') from None
+            raise KeyringError(tr('Nyckelringen kunde inte öppnas. Lås upp den och försök igen.')) from None
 
     def statuses(self, profiles):
         # Metadata only: no unlocking and no secret values loaded by the picker.
@@ -45,19 +46,19 @@ class Keyring:
     def store(self, profile, password):
         check_password(password)
         ok = self.call(Secret.password_store_sync, SCHEMA, self.attributes(profile),
-                       Secret.COLLECTION_DEFAULT, 'Anslutningar · ' + profile['name'], password, None)
+                       Secret.COLLECTION_DEFAULT, tr('Anslutningar · ') + profile['name'], password, None)
         if not ok:
-            raise KeyringError('Lösenordet sparades inte. Nyckelringen kan vara låst eller upplåsningen avbruten.')
+            raise KeyringError(tr('Lösenordet sparades inte. Nyckelringen kan vara låst eller upplåsningen avbruten.'))
 
     def clear(self, profile):
         self.call(Secret.password_clear_sync, SCHEMA, self.attributes(profile), None)
         if self.statuses([profile])[profile['id']]:
-            raise KeyringError('Lösenordet kunde inte tas bort. Lås upp nyckelringen och försök igen.')
+            raise KeyringError(tr('Lösenordet kunde inte tas bort. Lås upp nyckelringen och försök igen.'))
 
 
 def check_password(password):
     if not isinstance(password, str) or not password or any(c in password for c in ('\n', '\r', '\0')):
-        raise ValueError('Ange ett lösenord utan radbrytningar.')
+        raise ValueError(tr('Ange ett lösenord utan radbrytningar.'))
 
 
 def prompt_password(profile, *, manage=False, saved=False, message=''):
@@ -72,7 +73,7 @@ def prompt_password(profile, *, manage=False, saved=False, message=''):
     def activate(application):
         nonlocal answer
         window = Gtk.ApplicationWindow(application=application)
-        window.set_title(('Lösenord · ' if manage else 'Anslut till ') + profile['name'])
+        window.set_title((tr('Lösenord · ') if manage else tr('Anslut till ')) + profile['name'])
         window.set_default_size(580, -1)
         window.set_resizable(False)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
@@ -91,14 +92,14 @@ def prompt_password(profile, *, manage=False, saved=False, message=''):
         if message:
             label(message)
         if manage:
-            label('Lösenord sparat i nyckelringen. Ange ett nytt för att byta.' if saved
-                  else 'Spara ett lösenord i nyckelringen för att ansluta direkt.')
-        label('Nytt lösenord' if manage and saved else 'Lösenord')
+            label(tr('Lösenord sparat i nyckelringen. Ange ett nytt för att byta.') if saved
+                  else tr('Spara ett lösenord i nyckelringen för att ansluta direkt.'))
+        label(tr('Nytt lösenord') if manage and saved else tr('Lösenord'))
         entry = Gtk.PasswordEntry(show_peek_icon=True)
         entry.set_size_request(-1, 48)
         entry.set_hexpand(True)
         box.append(entry)
-        remember = Gtk.CheckButton(label='Kom ihåg lösenordet i nyckelringen')
+        remember = Gtk.CheckButton(label=tr('Kom ihåg lösenordet i nyckelringen'))
         remember.set_active(saved)
         if not manage:
             box.append(remember)
@@ -123,13 +124,13 @@ def prompt_password(profile, *, manage=False, saved=False, message=''):
             window.close()
 
         if manage and saved:
-            remove = Gtk.Button(label='Ta bort sparat lösenord')
+            remove = Gtk.Button(label=tr('Ta bort sparat lösenord'))
             remove.connect('clicked', lambda _: finish('clear'))
             buttons.append(remove)
-        cancel = Gtk.Button(label='Avbryt')
+        cancel = Gtk.Button(label=tr('Avbryt'))
         cancel.connect('clicked', lambda _: window.close())
         buttons.append(cancel)
-        accept = Gtk.Button(label='Spara lösenord' if manage else 'Anslut')
+        accept = Gtk.Button(label=tr('Spara lösenord') if manage else tr('Anslut'))
         accept.add_css_class('suggested-action')
         accept.connect('clicked', lambda _: finish('store' if manage else 'connect'))
         buttons.append(accept)

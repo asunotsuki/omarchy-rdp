@@ -1,6 +1,6 @@
 # Anslutningar — Omarchy RDP
 
-A small Swedish connection picker for Omarchy, powered by FreeRDP. Search by
+A small Swedish/English connection picker for Omarchy, powered by FreeRDP. Search by
 customer or computer, mark favorites, and open each Windows session fullscreen
 on its own workspace. The picker is a normal tiled window.
 
@@ -96,6 +96,13 @@ from `~/.config/hypr/bindings.lua` and the `omarchy-rdp.desktop` launcher first.
 
 ## Use
 
+- Choose **Svenska** or **English** in the bottom-right language menu. The
+  interface updates immediately and the choice is saved for future launches.
+  Swedish remains the default for existing installations. Profile names,
+  customers, notes, credentials and exported connection data are not translated.
+  Password/certificate dialogs and helper messages use the saved language when
+  they open; already running dialogs retain their original language. Standard
+  toolkit file-picker controls may follow the desktop language.
 - Open with **Super+R**, the monitor icon in the bar, or **Anslutningar** in
   the application launcher. Search, use ↑/↓ and Enter, or double-click a row.
 - **Lägg till** and **Redigera profil** share the same inline editor. Choose a
@@ -132,6 +139,7 @@ first make a backup. Export and profile files have owner-only permissions.
 | --- | --- |
 | Plugin | `~/.config/omarchy/plugins/david.rdp/` |
 | Profiles | `~/.config/omarchy-rdp/connections.json` |
+| Language preference | `~/.config/omarchy-rdp/settings.json` |
 | Setup/import backups | `~/.config/omarchy-rdp/backups/` |
 | Passwords | System Secret Service keyring |
 | Session locks | `$XDG_RUNTIME_DIR/omarchy-rdp/` |
@@ -145,8 +153,8 @@ secret; old entries remain associated with their original identity.
 
 Direct RDP over LAN, Tailscale or VPN is supported, with IPv4/DNS and an optional
 port, `DOMAIN\user` or UPN usernames. Gateways, MFA, Citrix, IPv6, multi-monitor
-sessions and automatic VPN handling are not implemented. The interface is
-currently Swedish. No custom Kerberos realm is configured.
+sessions and automatic VPN handling are not implemented. No custom Kerberos
+realm is configured.
 
 Clipboard and remote audio are enabled. No local drive, microphone or printer
 is shared automatically. Copying files between two RDP sessions still needs
@@ -171,7 +179,7 @@ keyring entries are retained. To temporarily hide the picker, use
 ## Development and packaging
 
 ```bash
-python -m unittest -v test_rdp.py test_install.py
+python -m unittest -v test_rdp.py test_install.py test_i18n.py
 python package.py
 ```
 
@@ -187,6 +195,11 @@ Before releasing, run the tests, inspect the ZIP contents, and validate an
 extracted copy with `omarchy plugin validate /path/to/extracted/plugin`.
 Set the version in `manifest.json`, update `CHANGELOG.md`, and use the same
 version for the Git tag/release. See [PUBLISHING.md](PUBLISHING.md).
+
+UI and Python messages share `translations.json`, with Swedish source strings
+and English translations. Named placeholders must match in both languages.
+`test_i18n.py` checks catalog coverage, placeholder consistency, persistence,
+translated helper errors and preservation of profile data.
 
 ## License
 

@@ -15,7 +15,8 @@ PLUGIN_ID = 'david.rdp'
 BEGIN = '-- BEGIN Anslutningar (david.rdp)'
 END = '-- END Anslutningar (david.rdp)'
 FILES = ('manifest.json', 'ProfileEditor.qml', 'TransferPanel.qml', 'PickerWindow.qml',
-         'Indicator.qml', 'rdp.py', 'credentials.py', 'krb5.conf', 'rdp-bindings.lua',
+         'Indicator.qml', 'Language.qml', 'i18n.py', 'translations.json',
+         'rdp.py', 'credentials.py', 'krb5.conf', 'rdp-bindings.lua',
          'README.md', 'LICENSE', 'CHANGELOG.md', 'install.py')
 BLOCK = (BEGIN + '\n'
          'o.bind("SUPER + R", "Anslutningar", "omarchy-shell shell toggle david.rdp")\n'

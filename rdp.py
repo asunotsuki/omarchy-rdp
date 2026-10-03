@@ -21,6 +21,8 @@ from urllib.parse import unquote, urlsplit
 # Omarchy watches every file in the plugin directory. Import caches would
 # trigger a plugin reload just as the first keyring status request opens it.
 sys.dont_write_bytecode = True
+import i18n
+from i18n import tr
 
 CONFIG = Path.home() / '.config/omarchy-rdp'
 PROFILES = CONFIG / 'connections.json'
@@ -51,10 +53,10 @@ def manage_password(ident):
     action, password, _remember = answer
     if action == 'clear':
         vault.clear(profile)
-        notify('Det sparade lösenordet har tagits bort.')
+        notify(tr('Det sparade lösenordet har tagits bort.'))
     else:
         vault.store(profile, password)
-        notify('Lösenordet är sparat i nyckelringen.')
+        notify(tr('Lösenordet är sparat i nyckelringen.'))
 
 
 def run(args, **kwargs):
@@ -69,57 +71,57 @@ def dialog(kind, title, text='', extra=()):
 
 
 def notify(text):
-    run(['notify-send', 'Anslutningar', text])
+    run(['notify-send', tr('Anslutningar'), text])
 
 
 def text_value(value, label, required=False, limit=500):
     if not isinstance(value, str) or any(ord(c) < 32 or ord(c) == 127 for c in value) or len(value) > limit:
-        raise ValueError(f'{label} innehåller ogiltiga tecken eller är för långt.')
+        raise ValueError(tr('{label} innehåller ogiltiga tecken eller är för långt.', label=label))
     value = value.strip()
     if required and not value:
-        raise ValueError(f'{label} måste fyllas i.')
+        raise ValueError(tr('{label} måste fyllas i.', label=label))
     return value
 
 
 def validate(profile):
     if not isinstance(profile, dict):
-        raise ValueError('En profil måste vara ett objekt.')
+        raise ValueError(tr('En profil måste vara ett objekt.'))
     ident = profile.get('id', '')
     if not isinstance(ident, str) or not re.fullmatch(r'[a-zA-Z0-9_-]{1,64}', ident):
-        raise ValueError('Ogiltigt profil-id.')
+        raise ValueError(tr('Ogiltigt profil-id.'))
     result = {'id': ident}
-    for key, label in [('name', 'Datornamn'), ('customer', 'Kund'), ('host', 'Adress'), ('username', 'Användare'), ('vpn', 'VPN'), ('notes', 'Anteckningar')]:
+    for key, label in [('name', tr('Datornamn')), ('customer', tr('Kund')), ('host', tr('Adress')), ('username', tr('Användare')), ('vpn', 'VPN'), ('notes', tr('Anteckningar'))]:
         result[key] = text_value(profile.get(key, ''), label, key in ('name', 'host', 'username'))
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9.-]*(?::[0-9]{1,5})?', result['host']):
-        raise ValueError('Ange IPv4 eller DNS-namn, eventuellt med :port. IPv6 kommer senare.')
+        raise ValueError(tr('Ange IPv4 eller DNS-namn, eventuellt med :port. IPv6 kommer senare.'))
     if ':' in result['host'] and not 1 <= int(result['host'].rsplit(':', 1)[1]) <= 65535:
-        raise ValueError('Porten måste vara mellan 1 och 65535.')
+        raise ValueError(tr('Porten måste vara mellan 1 och 65535.'))
     result['customer'] = result['customer'] or 'Egna maskiner'
     if not isinstance(profile.get('favorite', False), bool):
-        raise ValueError('favorite ska vara true eller false.')
+        raise ValueError(tr('favorite ska vara true eller false.'))
     result['favorite'] = profile.get('favorite', False)
     result['resolution'] = validate_resolution(profile.get('resolution', 'auto'))
     if profile.get('gateway'):
-        raise ValueError('Gateway stöds inte i denna första version.')
+        raise ValueError(tr('Gateway stöds inte i denna första version.'))
     return result
 
 
 def validate_resolution(value):
-    value = text_value(value, 'Upplösning', required=True, limit=32).lower().replace('×', 'x').replace(' ', '')
+    value = text_value(value, tr('Upplösning'), required=True, limit=32).lower().replace('×', 'x').replace(' ', '')
     if value == 'auto':
         return value
     match = re.fullmatch(r'([0-9]{3,4})x([0-9]{3,4})', value)
     if not match or not all(200 <= int(n) <= 8192 for n in match.groups()):
-        raise ValueError('Ange upplösning som bredd x höjd, till exempel 1920x1080. Varje mått måste vara 200–8192 pixlar.')
+        raise ValueError(tr('Ange upplösning som bredd x höjd, till exempel 1920x1080. Varje mått måste vara 200–8192 pixlar.'))
     return 'x'.join(str(int(n)) for n in match.groups())
 
 
 def parse_profiles(obj):
     if not isinstance(obj, dict) or type(obj.get('version')) is not int or obj['version'] != 1 or not isinstance(obj.get('connections'), list):
-        raise ValueError('Ogiltigt profilformat.')
+        raise ValueError(tr('Ogiltigt profilformat.'))
     profiles = [validate(p) for p in obj['connections']]
     if len({p['id'] for p in profiles}) != len(profiles):
-        raise ValueError('Profil-id får inte förekomma flera gånger.')
+        raise ValueError(tr('Profil-id får inte förekomma flera gånger.'))
     return profiles
 
 
@@ -158,45 +160,45 @@ def write_profile_document(path, profiles):
 
 def transfer_path(value):
     if not isinstance(value, str) or not value or '\0' in value:
-        raise ValueError('Välj en fil.')
+        raise ValueError(tr('Välj en fil.'))
     if value.startswith('file:'):
         url = urlsplit(value)
         if url.netloc not in ('', 'localhost') or url.query or url.fragment:
-            raise ValueError('Välj en lokal fil.')
+            raise ValueError(tr('Välj en lokal fil.'))
         value = unquote(url.path)
     path = Path(value)
     if not path.is_absolute():
-        raise ValueError('Välj en lokal fil med fullständig sökväg.')
+        raise ValueError(tr('Välj en lokal fil med fullständig sökväg.'))
     return path
 
 
 def selected_profiles(profiles, ids):
     if not isinstance(ids, list) or not ids or any(not isinstance(i, str) for i in ids):
-        raise ValueError('Välj minst en anslutning.')
+        raise ValueError(tr('Välj minst en anslutning.'))
     if len(set(ids)) != len(ids) or not set(ids) <= {p['id'] for p in profiles}:
-        raise ValueError('Urvalet har ändrats. Öppna exporten eller importen igen.')
+        raise ValueError(tr('Urvalet har ändrats. Öppna exporten eller importen igen.'))
     return [p for p in profiles if p['id'] in set(ids)]
 
 
 def transfer_profiles(payload):
     """Versioned, allowlisted profile transfer. Never contacts the keyring."""
     if not isinstance(payload, dict):
-        raise ValueError('Ogiltiga uppgifter.')
+        raise ValueError(tr('Ogiltiga uppgifter.'))
     operation = payload.get('operation')
     if operation == 'preview':
         path = transfer_path(payload.get('path'))
         with path.open('rb') as source:
             data = source.read(4 * 1024 * 1024 + 1)
         if len(data) > 4 * 1024 * 1024:
-            raise ValueError('Filen är för stor. Högst 4 MB stöds.')
+            raise ValueError(tr('Filen är för stor. Högst 4 MB stöds.'))
         profiles = parse_profiles(json.loads(data))
         if not profiles:
-            raise ValueError('Filen innehåller inga anslutningar.')
+            raise ValueError(tr('Filen innehåller inga anslutningar.'))
         return {'profiles': profiles}
     if operation == 'export':
         path = transfer_path(payload.get('path'))
         if path.resolve() == PROFILES.resolve():
-            raise ValueError('Välj en annan fil än appens aktiva anslutningsfil.')
+            raise ValueError(tr('Välj en annan fil än appens aktiva anslutningsfil.'))
         profiles = selected_profiles(load_profiles(), payload.get('ids'))
         write_profile_document(path, profiles)
         return {'count': len(profiles)}
@@ -205,7 +207,7 @@ def transfer_profiles(payload):
         incoming = selected_profiles(incoming, payload.get('ids'))
         policy = payload.get('conflicts')
         if policy not in ('keep', 'replace'):
-            raise ValueError('Välj om befintliga anslutningar ska behållas eller ersättas.')
+            raise ValueError(tr('Välj om befintliga anslutningar ska behållas eller ersättas.'))
         with config_lock():
             current = load_profiles()
             merged = {p['id']: p for p in current}
@@ -227,7 +229,7 @@ def transfer_profiles(payload):
                 write_profile_document(backup / 'connections.json', current)
                 save_profiles(list(merged.values()))
         return {'added': added, 'replaced': replaced, 'skipped': skipped}
-    raise ValueError('Okänd import- eller exportåtgärd.')
+    raise ValueError(tr('Okänd import- eller exportåtgärd.'))
 
 
 def profile_by_id(ident):
@@ -237,7 +239,7 @@ def profile_by_id(ident):
 def save_profile(payload):
     """Create or update one profile, preserving concurrent changes to other rows."""
     if not isinstance(payload, dict) or not isinstance(payload.get('fields'), dict):
-        raise ValueError('Ogiltiga profiluppgifter.')
+        raise ValueError(tr('Ogiltiga profiluppgifter.'))
     ident = payload.get('id', '')
     fields = {key: payload['fields'].get(key, '') for key in
               ('name', 'customer', 'host', 'username', 'vpn', 'notes')}
@@ -248,7 +250,7 @@ def save_profile(payload):
         if ident:
             original = next((p for p in profiles if p['id'] == ident), None)
             if original is None:
-                raise ValueError('Profilen finns inte längre. Öppna listan igen.')
+                raise ValueError(tr('Profilen finns inte längre. Öppna listan igen.'))
             updated = validate(dict(original, **fields))
             profiles = [updated if p['id'] == ident else p for p in profiles]
         else:
@@ -261,14 +263,14 @@ def save_profile(payload):
 def hypr_json(what):
     proc = run(['hyprctl', '-j', what], timeout=4)
     if proc.returncode:
-        raise RuntimeError('Kunde inte kontakta Hyprland.')
+        raise RuntimeError(tr('Kunde inte kontakta Hyprland.'))
     return json.loads(proc.stdout)
 
 
 def dispatch(expression):
     proc = run(['hyprctl', 'dispatch', expression], timeout=4)
     if proc.returncode or 'error' in proc.stdout.lower():
-        raise RuntimeError('Hyprland kunde inte placera RDP-fönstret: ' + proc.stdout.strip())
+        raise RuntimeError(tr('Hyprland kunde inte placera RDP-fönstret: ') + proc.stdout.strip())
 
 
 def window_for(ident):
@@ -278,7 +280,7 @@ def window_for(ident):
 def focus_window(window):
     address = window['address']
     if not re.fullmatch(r'0x[0-9a-fA-F]+', address):
-        raise ValueError('Ogiltig fönsteradress.')
+        raise ValueError(tr('Ogiltig fönsteradress.'))
     dispatch('hl.dsp.focus({window = ' + json.dumps('address:' + address) + '})')
 
 
@@ -290,7 +292,7 @@ def place_window(window):
         target = next(i for i in range(11, 1000) if i not in used)
         address = window['address']
         if not re.fullmatch(r'0x[0-9a-fA-F]+', address):
-            raise ValueError('Ogiltig fönsteradress.')
+            raise ValueError(tr('Ogiltig fönsteradress.'))
         selector = json.dumps('address:' + address)
         dispatch('hl.dsp.window.move({window = ' + selector + ', workspace = "' + str(target) + '", follow = true})')
         dispatch('hl.dsp.window.fullscreen({window = ' + selector + ', mode = "fullscreen"})')
@@ -300,7 +302,7 @@ def place_window(window):
 def build_options(profile, password):
     # FreeRDP's args-from format has exactly one argument per line.
     if any(c in password for c in ('\n', '\r', '\0')):
-        raise ValueError('Radbrytningar stöds inte i lösenord i denna version.')
+        raise ValueError(tr('Radbrytningar stöds inte i lösenord i denna version.'))
     username = profile['username']
     domain = ''
     if '\\' in username:
@@ -323,7 +325,7 @@ def certificate_summary(transcript):
     transcript = transcript.replace('\r', '')
     headers = list(re.finditer(r'^(?:New Certificate details:|Certificate details(?: for [^\n]+)?:)$', transcript, re.M))
     if not headers:
-        raise ValueError('Certifikatuppgifterna kunde inte läsas. Anslutningen avbröts.')
+        raise ValueError(tr('Certifikatuppgifterna kunde inte läsas. Anslutningen avbröts.'))
     header = headers[-1]
     changed = header.group().startswith('New ')
     blocks = transcript[header.end():].split('Old Certificate details:', 1)
@@ -332,32 +334,32 @@ def certificate_summary(transcript):
         match = re.search(r'^\t' + re.escape(key) + r':[ \t]*([^\n]*)$', block, re.M)
         value = match.group(1).strip() if match else ''
         if len(value) > limit or any(ord(c) < 32 for c in value):
-            raise ValueError('Certifikatuppgifterna har ett oväntat format. Anslutningen avbröts.')
+            raise ValueError(tr('Certifikatuppgifterna har ett oväntat format. Anslutningen avbröts.'))
         return value
 
     def fingerprint(block):
         value = field(block, 'Thumbprint', 191)
         if not re.fullmatch(r'[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){19,63}', value):
-            raise ValueError('Certifikatets fingeravtryck kunde inte läsas. Anslutningen avbröts.')
+            raise ValueError(tr('Certifikatets fingeravtryck kunde inte läsas. Anslutningen avbröts.'))
         octets = value.upper().split(':')
         return '\n'.join(':'.join(octets[i:i + 16]) for i in range(0, len(octets), 16))
 
     current = blocks[0]
     if changed:
-        intro = 'Datorns certifikat har ändrats sedan förra anslutningen. Kontrollera ändringen innan du litar på det nya certifikatet.'
+        intro = tr('Datorns certifikat har ändrats sedan förra anslutningen. Kontrollera ändringen innan du litar på det nya certifikatet.')
     else:
-        intro = 'Datorns identitet kunde inte verifieras automatiskt. Kontrollera namn och fingeravtryck innan du litar på certifikatet.'
-    name = field(current, 'Common Name') or field(current, 'Subject') or '(namn saknas)'
-    lines = [intro, '', 'Namn i certifikatet: ' + name]
-    for key, label in [('Issuer', 'Utfärdare'), ('Valid from', 'Giltigt från'), ('Valid to', 'Giltigt till')]:
+        intro = tr('Datorns identitet kunde inte verifieras automatiskt. Kontrollera namn och fingeravtryck innan du litar på certifikatet.')
+    name = field(current, 'Common Name') or field(current, 'Subject') or tr('(namn saknas)')
+    lines = [intro, '', tr('Namn i certifikatet: ') + name]
+    for key, label in [('Issuer', tr('Utfärdare')), ('Valid from', tr('Giltigt från')), ('Valid to', tr('Giltigt till'))]:
         value = field(current, key)
         if value:
             lines.append(label + ': ' + value)
-    lines.extend(['', ('Nytt fingeravtryck:' if changed else 'Fingeravtryck:') + '\n' + fingerprint(current)])
+    lines.extend(['', (tr('Nytt fingeravtryck:') if changed else tr('Fingeravtryck:')) + '\n' + fingerprint(current)])
     if changed:
         if len(blocks) != 2:
-            raise ValueError('Det tidigare certifikatet kunde inte läsas. Anslutningen avbröts.')
-        lines.extend(['', 'Tidigare fingeravtryck:\n' + fingerprint(blocks[1])])
+            raise ValueError(tr('Det tidigare certifikatet kunde inte läsas. Anslutningen avbröts.'))
+        lines.extend(['', tr('Tidigare fingeravtryck:\n') + fingerprint(blocks[1])])
     return '\n'.join(lines)
 
 
@@ -365,13 +367,13 @@ def certificate_question(transcript, host=''):
     try:
         summary = certificate_summary(transcript)
     except ValueError as error:
-        dialog('error', 'Kunde inte kontrollera certifikatet', str(error))
+        dialog('error', tr('Kunde inte kontrollera certifikatet'), str(error))
         return False
     if host:
-        summary = 'Ansluter till: ' + host + '\n\n' + summary
-    answer = dialog('question', 'Verifiera fjärrdatorns certifikat',
+        summary = tr('Ansluter till: ') + host + '\n\n' + summary
+    answer = dialog('question', tr('Verifiera fjärrdatorns certifikat'),
                     summary,
-                    ['--ok-label=Lita på och spara', '--cancel-label=Avbryt', '--default-cancel'])
+                    ['--ok-label=' + tr('Lita på och spara'), '--cancel-label=' + tr('Avbryt'), '--default-cancel'])
     return answer.returncode == 0
 
 
@@ -390,12 +392,12 @@ def session_error(code, transcript):
     errors = [error for error in errors if error not in
               {'ERRINFO_SUCCESS', 'ERRCONNECT_SUCCESS', 'ERRCONNECT_CONNECT_CANCELLED'}]
     if code < 0:
-        return 'RDP-klienten avslutades oväntat (signal ' + str(-code) + ').'
+        return tr('RDP-klienten avslutades oväntat (signal {signal}).', signal=-code)
     if errors:
         return ', '.join(errors[:4])
     # Documented non-user server reasons, license/protocol and client failures.
     if code in range(1, 11) or code in range(16, 27) or code == 32 or code in range(128, 162):
-        return f'FreeRDP rapporterade ett anslutningsfel (kod {code}).'
+        return tr('FreeRDP rapporterade ett anslutningsfel (kod {code}).', code=code)
     return None
 
 
@@ -455,8 +457,8 @@ def supervise(profile, password, on_connected=None):
                 elif re.search(r'(Username:|Domain:|Password:|GatewayPassword:)\s*$', pending):
                     proc.terminate()
                     if not connected and re.search(r'(?<![A-Za-z])Password:\s*$', pending):
-                        raise AuthenticationRejected('Servern begärde ett nytt lösenord.')
-                    raise RuntimeError('Servern begärde ytterligare inloggning. Kontrollera användarnamn och lösenord i profilen; gateway stöds ännu inte.')
+                        raise AuthenticationRejected(tr('Servern begärde ett nytt lösenord.'))
+                    raise RuntimeError(tr('Servern begärde ytterligare inloggning. Kontrollera användarnamn och lösenord i profilen; gateway stöds ännu inte.'))
             elif proc.poll() is not None:
                 break
             if proc.poll() is not None:
@@ -474,17 +476,17 @@ def supervise(profile, password, on_connected=None):
                         placed = True
                     except Exception as error:
                         placement_failed = True
-                        notify('RDP-fönstret öppnades, men arbetsytan kunde inte väljas: ' + str(error))
+                        notify(tr('RDP-fönstret öppnades, men arbetsytan kunde inte väljas: ') + str(error))
             if not placed and not placement_failed and time.monotonic() - began > 75:
                 proc.terminate()
-                raise RuntimeError('Anslutningen tog för lång tid. Kontrollera Tailscale/VPN, adress och att Windows tillåter fjärrskrivbord.')
+                raise RuntimeError(tr('Anslutningen tog för lång tid. Kontrollera Tailscale/VPN, adress och att Windows tillåter fjärrskrivbord.'))
         code = proc.wait(timeout=5)
         if not declined and not connected and (code in (132, 134, 154) or
                 re.search(r'\bERRCONNECT_(?:AUTHENTICATION_FAILED|LOGON_FAILURE|WRONG_PASSWORD)\b', transcript)):
-            raise AuthenticationRejected('Windows godkände inte användarnamnet eller lösenordet.')
+            raise AuthenticationRejected(tr('Windows godkände inte användarnamnet eller lösenordet.'))
         detail = session_error(code, transcript)
         if detail and not declined:
-            dialog('error', 'RDP-anslutningen avbröts', profile['name'] + '\n\n' + detail)
+            dialog('error', tr('RDP-anslutningen avbröts'), profile['name'] + '\n\n' + detail)
     finally:
         os.close(master)
         if proc.poll() is None:
@@ -511,7 +513,7 @@ def session(ident):
             if existing:
                 focus_window(existing)
             else:
-                notify('Anslutningen håller redan på att startas.')
+                notify(tr('Anslutningen håller redan på att startas.'))
             return
         try:
             connect_with_credentials(profile)
@@ -526,7 +528,7 @@ def connect_with_credentials(profile):
         password = vault.lookup(profile)
     except RuntimeError:
         password = None
-        message = 'Nyckelringen kunde inte öppnas. Du kan ange lösenordet för denna anslutning.'
+        message = tr('Nyckelringen kunde inte öppnas. Du kan ange lösenordet för denna anslutning.')
     was_saved = bool(password)
     for attempt in range(2):
         used_saved = bool(password) and attempt == 0
@@ -546,22 +548,22 @@ def connect_with_credentials(profile):
                 elif was_saved:
                     vault.clear(profile)
             except RuntimeError:
-                notify('Ansluten, men lösenordet kunde inte uppdateras i nyckelringen. Försök via Lösenord… i väljaren.')
+                notify(tr('Ansluten, men lösenordet kunde inte uppdateras i nyckelringen. Försök via Lösenord… i väljaren.'))
 
         try:
             supervise(profile, password, on_connected=remember_after_connect)
             return
         except AuthenticationRejected:
             if not used_saved:
-                dialog('error', 'Inloggningen misslyckades', 'Windows godkände inte användarnamnet eller lösenordet.')
+                dialog('error', tr('Inloggningen misslyckades'), tr('Windows godkände inte användarnamnet eller lösenordet.'))
                 return
             password = None
-            message = 'Windows godkände inte det sparade lösenordet. Ange ett nytt eller avbryt och kontrollera användarnamnet i profilen.'
+            message = tr('Windows godkände inte det sparade lösenordet. Ange ett nytt eller avbryt och kontrollera användarnamnet i profilen.')
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['list', 'validate', 'save', 'favorite', 'launch', 'session', 'credential-status', 'credential', 'transfer'])
+    parser.add_argument('action', choices=['list', 'validate', 'save', 'favorite', 'launch', 'session', 'credential-status', 'credential', 'transfer', 'language'])
     parser.add_argument('id', nargs='?')
     parser.add_argument('--profiles', type=Path, help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -569,12 +571,21 @@ def main():
     if args.profiles:
         PROFILES = args.profiles
         CONFIG = PROFILES.parent
-    if args.action == 'transfer':
+    i18n.configure(CONFIG / 'settings.json')
+    if args.action == 'language':
+        try:
+            with config_lock():
+                language = i18n.save_language(CONFIG / 'settings.json', args.id)
+            print(json.dumps({'ok': True, 'language': language}))
+        except (ValueError, OSError) as error:
+            print(json.dumps({'ok': False, 'error': str(error)}))
+            sys.exit(1)
+    elif args.action == 'transfer':
         try:
             payload = json.loads(sys.stdin.readline(8 * 1024 * 1024))
             print(json.dumps(dict(ok=True, **transfer_profiles(payload)), ensure_ascii=False))
         except (ValueError, OSError, RecursionError) as error:
-            message = str(error) if isinstance(error, (ValueError, OSError)) and not isinstance(error, (json.JSONDecodeError, UnicodeError)) else 'Filen kunde inte läsas som en giltig anslutningsexport.'
+            message = str(error) if isinstance(error, (ValueError, OSError)) and not isinstance(error, (json.JSONDecodeError, UnicodeError)) else tr('Filen kunde inte läsas som en giltig anslutningsexport.')
             print(json.dumps({'ok': False, 'error': message}, ensure_ascii=False))
             sys.exit(1)
     elif args.action == 'credential-status':
@@ -586,7 +597,7 @@ def main():
         manage_password(args.id)
     elif args.action in ('list', 'validate'):
         profiles = load_profiles()
-        print(json.dumps(profiles, ensure_ascii=False) if args.action == 'list' else f'{len(profiles)} giltiga profiler')
+        print(json.dumps(profiles, ensure_ascii=False) if args.action == 'list' else tr('{count} giltiga profiler', count=len(profiles)))
     elif args.action == 'save':
         try:
             profile = save_profile(json.loads(sys.stdin.readline(16384)))
@@ -605,7 +616,7 @@ def main():
         proc = run(['systemd-run', '--user', '--collect', '--quiet', '--unit=omarchy-rdp-' + uuid.uuid4().hex[:12],
                     '--property=Type=exec', sys.executable, str(HERE / 'rdp.py'), 'session', args.id])
         if proc.returncode:
-            raise RuntimeError('Kunde inte starta RDP-sessionen: ' + proc.stderr.strip())
+            raise RuntimeError(tr('Kunde inte starta RDP-sessionen: ') + proc.stderr.strip())
     else:
         session(args.id)
 
@@ -615,5 +626,5 @@ if __name__ == '__main__':
     try:
         main()
     except (ValueError, RuntimeError, OSError, StopIteration, subprocess.TimeoutExpired) as error:
-        dialog('error', 'Anslutningar', str(error) or 'Profilen finns inte längre.')
+        dialog('error', tr('Anslutningar'), str(error) or tr('Profilen finns inte längre.'))
         sys.exit(1)

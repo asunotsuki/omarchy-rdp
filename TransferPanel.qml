@@ -5,6 +5,7 @@ import qs.Commons
 
 Item {
     id: transfer
+    required property var i18n
     property bool importing: false
     property bool busy: false
     property string error: ""
@@ -86,17 +87,17 @@ Item {
         anchors.fill: parent
         anchors.margins: Style.space(22)
         spacing: Style.space(14)
-        Label { text: transfer.importing ? "Importera anslutningar" : "Exportera anslutningar"; font.pixelSize: transfer.bodySize + 7; Layout.fillWidth: true }
+        Label { text: transfer.importing ? i18n.tr("Importera anslutningar") : i18n.tr("Exportera anslutningar"); font.pixelSize: transfer.bodySize + 7; Layout.fillWidth: true }
         Label {
-            text: transfer.importing ? "Välj vilka anslutningar du vill lägga till. Lösenord importeras inte." : "Välj anslutningar att spara i en fil. Lösenord följer inte med."
+            text: transfer.importing ? i18n.tr("Välj vilka anslutningar du vill lägga till. Lösenord importeras inte.") : i18n.tr("Välj anslutningar att spara i en fil. Lösenord följer inte med.")
             opacity: 0.75
             Layout.fillWidth: true
         }
         RowLayout {
             Layout.fillWidth: true
-            Action { id: selectAll; text: "Välj alla"; enabled: !transfer.busy; onClicked: transfer.selectedIds = transfer.profiles.map(function(p) { return p.id }) }
-            Action { text: "Välj inga"; enabled: !transfer.busy; onClicked: transfer.selectedIds = [] }
-            Label { text: transfer.selectedIds.length + " av " + transfer.profiles.length + " valda"; horizontalAlignment: Text.AlignRight; Layout.fillWidth: true }
+            Action { id: selectAll; text: i18n.tr("Välj alla"); enabled: !transfer.busy; onClicked: transfer.selectedIds = transfer.profiles.map(function(p) { return p.id }) }
+            Action { text: i18n.tr("Välj inga"); enabled: !transfer.busy; onClicked: transfer.selectedIds = [] }
+            Label { text: i18n.tr("{selected} av {total} valda", {selected: transfer.selectedIds.length, total: transfer.profiles.length}); horizontalAlignment: Text.AlignRight; Layout.fillWidth: true }
         }
         ListView {
             id: list
@@ -123,7 +124,7 @@ Item {
                     contentItem: Column {
                         leftPadding: Style.space(36)
                         spacing: Style.space(3)
-                        Label { width: parent.width - parent.leftPadding; text: row.modelData.name + (transfer.importing && transfer.existingIds.indexOf(row.modelData.id) >= 0 ? " · Befintlig" : ""); wrapMode: Text.NoWrap; elide: Text.ElideRight }
+                        Label { width: parent.width - parent.leftPadding; text: row.modelData.name + (transfer.importing && transfer.existingIds.indexOf(row.modelData.id) >= 0 ? i18n.tr(" · Befintlig") : ""); wrapMode: Text.NoWrap; elide: Text.ElideRight }
                         Label { width: parent.width - parent.leftPadding; text: row.modelData.customer + " · " + row.modelData.host; opacity: 0.75; font.pixelSize: transfer.bodySize - 2; wrapMode: Text.NoWrap; elide: Text.ElideRight }
                     }
                 }
@@ -133,9 +134,9 @@ Item {
             visible: transfer.importing && transfer.conflicts > 0
             Layout.fillWidth: true
             spacing: Style.space(4)
-            Label { text: transfer.conflicts + " valda anslutningar finns redan och behålls som standard."; Layout.fillWidth: true }
+            Label { text: i18n.tr("{count} valda anslutningar finns redan och behålls som standard.", {count: transfer.conflicts}); Layout.fillWidth: true }
             Choice {
-                text: "Ersätt befintliga med uppgifterna från filen"
+                text: i18n.tr("Ersätt befintliga med uppgifterna från filen")
                 Layout.fillWidth: true
                 enabled: !transfer.busy
                 checked: transfer.replaceExisting
@@ -147,9 +148,9 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Item { Layout.fillWidth: true }
-            Action { text: "Avbryt"; enabled: !transfer.busy; onClicked: transfer.cancelled() }
+            Action { text: i18n.tr("Avbryt"); enabled: !transfer.busy; onClicked: transfer.cancelled() }
             Action {
-                text: transfer.busy ? "Arbetar…" : (transfer.importing ? "Importera" : "Spara fil…")
+                text: transfer.busy ? i18n.tr("Arbetar…") : (transfer.importing ? i18n.tr("Importera") : i18n.tr("Spara fil…"))
                 enabled: !transfer.busy && transfer.selectedIds.length > 0
                 onClicked: transfer.submitted()
             }

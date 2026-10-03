@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "david.rdp",
   "name": "Anslutningar",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "author": "David",
   "license": "MIT",
-  "description": "Sökbara RDP-profiler med VPN-anteckningar och separata arbetsytor.",
+  "description": "Swedish/English RDP picker with VPN notes and separate workspaces.",
   "kinds": [
     "overlay",
     "bar-widget"

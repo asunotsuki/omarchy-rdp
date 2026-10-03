@@ -5,6 +5,7 @@ import qs.Commons
 
 Item {
     id: editor
+    required property var i18n
     property bool editingExisting: false
     property bool busy: false
     property string error: ""
@@ -22,7 +23,7 @@ Item {
     function load(profile) {
         error = ""
         nameField.text = profile ? profile.name : ""
-        customerField.text = profile ? profile.customer : "Egna maskiner"
+        customerField.text = profile ? profile.customer : i18n.tr("Egna maskiner")
         hostField.text = profile ? profile.host : ""
         userField.text = profile ? profile.username : ""
         vpnField.text = profile ? profile.vpn : ""
@@ -44,7 +45,7 @@ Item {
     function submit() {
         if (busy) return
         if (!nameField.text.trim() || !hostField.text.trim() || !userField.text.trim()) {
-            error = "Fyll i datornamn, adress och användarnamn."
+            error = i18n.tr("Fyll i datornamn, adress och användarnamn.")
             return
         }
         saveRequested(values())
@@ -126,12 +127,12 @@ Item {
         anchors.margins: Style.space(24)
         spacing: Style.space(16)
         Label {
-            text: editor.editingExisting ? "Redigera anslutning" : "Ny anslutning"
+            text: editor.editingExisting ? i18n.tr("Redigera anslutning") : i18n.tr("Ny anslutning")
             font.pixelSize: editor.bodySize + 7
             Layout.fillWidth: true
         }
         Label {
-            text: "Datornamn, adress och användarnamn behövs. Lösenord kan sparas separat i nyckelringen."
+            text: i18n.tr("Datornamn, adress och användarnamn behövs. Lösenord kan sparas separat i nyckelringen.")
             opacity: 0.7
             Layout.fillWidth: true
         }
@@ -148,22 +149,22 @@ Item {
                 width: scroll.availableWidth
                 spacing: Style.space(16)
                 enabled: !editor.busy
-                Field { id: nameField; label: "Datornamn"; hint: "Till exempel Acer Revo" }
-                Field { id: customerField; label: "Kund / grupp"; hint: "Till exempel Egna maskiner" }
-                Field { id: hostField; label: "Adress"; hint: "Tailscale-IP eller DNS-namn, eventuellt :port" }
-                Field { id: userField; label: "Windows-användare"; hint: "Användarnamn, e-post eller DOMÄN\\namn" }
+                Field { id: nameField; label: i18n.tr("Datornamn"); hint: i18n.tr("Till exempel Acer Revo") }
+                Field { id: customerField; label: i18n.tr("Kund / grupp"); hint: i18n.tr("Till exempel Egna maskiner") }
+                Field { id: hostField; label: i18n.tr("Adress"); hint: i18n.tr("Tailscale-IP eller DNS-namn, eventuellt :port") }
+                Field { id: userField; label: i18n.tr("Windows-användare"); hint: i18n.tr("Användarnamn, e-post eller DOMÄN\\namn") }
                 GridLayout {
                     Layout.fillWidth: true
                     columns: width >= Style.space(440) ? 2 : 1
                     columnSpacing: Style.space(16)
                     rowSpacing: Style.space(7)
-                    Label { text: "Upplösning"; Layout.preferredWidth: parent.columns === 2 ? Style.space(140) : -1 }
+                    Label { text: i18n.tr("Upplösning"); Layout.preferredWidth: parent.columns === 2 ? Style.space(140) : -1 }
                     C.ComboBox {
                         id: resolutionChoice
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.space(46)
-                        model: ["Automatisk", "1280 × 720", "1920 × 1080", "1920 × 1200", "2560 × 1440", "3440 × 1440", "3840 × 2160", "Egen upplösning…"]
-                        Accessible.name: "Upplösning"
+                        model: [i18n.tr("Automatisk"), "1280 × 720", "1920 × 1080", "1920 × 1200", "2560 × 1440", "3440 × 1440", "3840 × 2160", i18n.tr("Egen upplösning…")]
+                        Accessible.name: i18n.tr("Upplösning")
                         contentItem: Label {
                             text: resolutionChoice.displayText
                             verticalAlignment: Text.AlignVCenter
@@ -197,21 +198,21 @@ Item {
                         }
                     }
                 }
-                Field { id: customResolution; visible: resolutionChoice.currentIndex === editor.resolutionValues.length - 1; label: "Bredd × höjd"; hint: "Till exempel 2560x1600" }
-                Label { Layout.fillWidth: true; opacity: 0.7; text: resolutionChoice.currentIndex === 0 ? "Anpassas när fönstrets storlek ändras." : "Fast upplösning på fjärrdatorn. Bilden skalas till fönstret. Gäller nästa anslutning." }
-                Field { id: vpnField; label: "VPN (valfritt)"; hint: "Till exempel Tailscale" }
-                Field { id: notesField; label: "VPN-anteckning (valfritt)"; hint: "Information att ha till hands före anslutning" }
+                Field { id: customResolution; visible: resolutionChoice.currentIndex === editor.resolutionValues.length - 1; label: i18n.tr("Bredd × höjd"); hint: i18n.tr("Till exempel 2560x1600") }
+                Label { Layout.fillWidth: true; opacity: 0.7; text: resolutionChoice.currentIndex === 0 ? i18n.tr("Anpassas när fönstrets storlek ändras.") : i18n.tr("Fast upplösning på fjärrdatorn. Bilden skalas till fönstret. Gäller nästa anslutning.") }
+                Field { id: vpnField; label: i18n.tr("VPN (valfritt)"); hint: i18n.tr("Till exempel Tailscale") }
+                Field { id: notesField; label: i18n.tr("VPN-anteckning (valfritt)"); hint: i18n.tr("Information att ha till hands före anslutning") }
                 Label {
                     Layout.fillWidth: true
-                    text: !editor.editingExisting ? "Spara profilen först. Lösenordet kan du sedan spara vid anslutning." :
+                    text: !editor.editingExisting ? i18n.tr("Spara profilen först. Lösenordet kan du sedan spara vid anslutning.") :
                         (hostField.text !== editor.savedHost || userField.text !== editor.savedUsername ?
-                         "Spara ändrad adress/användare innan du hanterar lösenordet." :
-                         (editor.credentialSaved ? "Lösenord sparat i nyckelringen." : "Inget sparat lösenord."))
+                         i18n.tr("Spara ändrad adress/användare innan du hanterar lösenordet.") :
+                         (editor.credentialSaved ? i18n.tr("Lösenord sparat i nyckelringen.") : i18n.tr("Inget sparat lösenord.")))
                     opacity: 0.7
                 }
                 Button {
                     visible: editor.editingExisting
-                    text: editor.credentialSaved ? "Byt / ta bort lösenord…" : "Spara lösenord…"
+                    text: editor.credentialSaved ? i18n.tr("Byt / ta bort lösenord…") : i18n.tr("Spara lösenord…")
                     enabled: !editor.credentialBusy && hostField.text === editor.savedHost && userField.text === editor.savedUsername
                     onClicked: editor.credentialRequested()
                 }
@@ -222,9 +223,9 @@ Item {
         Rectangle { color: Color.menu.border; Layout.fillWidth: true; height: 1 }
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Enter sparar · Esc avbryter"; opacity: 0.7; font.pixelSize: editor.bodySize - 2; Layout.fillWidth: true }
-            Button { text: "Avbryt"; enabled: !editor.busy; onClicked: editor.cancelled() }
-            Button { text: editor.busy ? "Sparar…" : "Spara"; enabled: !editor.busy; onClicked: editor.submit() }
+            Label { text: i18n.tr("Enter sparar · Esc avbryter"); opacity: 0.7; font.pixelSize: editor.bodySize - 2; Layout.fillWidth: true }
+            Button { text: i18n.tr("Avbryt"); enabled: !editor.busy; onClicked: editor.cancelled() }
+            Button { text: editor.busy ? i18n.tr("Sparar…") : i18n.tr("Spara"); enabled: !editor.busy; onClicked: editor.submit() }
         }
     }
 }

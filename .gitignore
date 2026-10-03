@@ -13,3 +13,4 @@ backups/
 *.json
 !manifest.json
 !connections.example.json
+!translations.json

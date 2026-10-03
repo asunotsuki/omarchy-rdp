@@ -21,6 +21,7 @@ Item {
     property var savedPasswords: ({})
     property bool keyringAvailable: true
     property alias editor: profileEditor
+    property alias languageState: i18n
     property var profiles: []
     property var filtered: []
     property int current: 0
@@ -34,6 +35,19 @@ Item {
     readonly property color fg: Color.menu.text
     readonly property color dim: Qt.rgba(fg.r, fg.g, fg.b, 0.75)
     readonly property color line: Color.menu.border
+
+    Language {
+        id: i18n
+        profilesPath: root.configPath
+        helper: root.helper
+        onFailed: function(message) { root.problem = message }
+        onLanguageChanged: {
+            root.status = ""
+            root.problem = ""
+            profileEditor.error = ""
+            transferPanel.error = ""
+        }
+    }
 
     function open(payload) {
         opened = true
@@ -145,7 +159,7 @@ Item {
         onLoaded: {
             try {
                 var parsed = JSON.parse(text())
-                if (!Array.isArray(parsed.connections)) throw new Error("Fältet connections ska vara en lista.")
+                if (!Array.isArray(parsed.connections)) throw new Error(i18n.tr("Fältet connections ska vara en lista."))
                 root.profiles = parsed.connections
                 root.refreshCredentials()
                 root.problem = ""
@@ -155,9 +169,9 @@ Item {
                     if (index >= 0) root.current = index
                     root.savedId = ""
                 }
-            } catch (error) { root.problem = "Kunde inte läsa profilerna: " + error.message }
+            } catch (error) { root.problem = i18n.tr("Kunde inte läsa profilerna: ") + error.message }
         }
-        onLoadFailed: { root.problem = "Kunde inte läsa " + root.configPath }
+        onLoadFailed: { root.problem = i18n.tr("Kunde inte läsa ") + root.configPath }
     }
     Process {
         id: credentialStatus
@@ -183,7 +197,7 @@ Item {
         id: mutation
         onExited: function(code) {
             if (code === 0) dataFile.reload()
-            else root.problem = "Kunde inte spara favoritmarkeringen."
+            else root.problem = i18n.tr("Kunde inte spara favoritmarkeringen.")
         }
     }
 
@@ -208,14 +222,14 @@ Item {
                         Qt.callLater(function() { transferPanel.focusFirst() })
                     } else {
                         root.transferring = false
-                        root.status = transferProcess.operation === "export" ? result.count + " anslutningar exporterade utan lösenord."
-                            : "Import klar: " + result.added + " tillagda, " + result.replaced + " ersatta, " + result.skipped + " behållna."
+                        root.status = transferProcess.operation === "export" ? i18n.tr("{count} anslutningar exporterade utan lösenord.", {count: result.count})
+                            : i18n.tr("Import klar: {added} tillagda, {replaced} ersatta, {skipped} behållna.", {added: result.added, replaced: result.replaced, skipped: result.skipped})
                         if (transferProcess.operation === "import") { search.text = ""; dataFile.reload() }
                         search.forceActiveFocus()
                     }
                 } catch (error) {
-                    if (root.transferring) transferPanel.error = "Kunde inte slutföra åtgärden. Försök igen."
-                    else root.problem = "Kunde inte läsa importfilen."
+                    if (root.transferring) transferPanel.error = i18n.tr("Kunde inte slutföra åtgärden. Försök igen.")
+                    else root.problem = i18n.tr("Kunde inte läsa importfilen.")
                 }
             }
         }
@@ -235,7 +249,7 @@ Item {
                     search.text = ""
                     dataFile.reload()
                     search.forceActiveFocus()
-                } catch (error) { profileEditor.error = "Kunde inte spara profilen. Försök igen." }
+                } catch (error) { profileEditor.error = i18n.tr("Kunde inte spara profilen. Försök igen.") }
             }
         }
     }
@@ -264,7 +278,7 @@ Item {
     FloatingWindow {
         id: panel
         visible: false
-        title: "Anslutningar"
+        title: i18n.tr("Anslutningar")
         color: root.bg
         implicitWidth: Style.space(1000)
         implicitHeight: Style.space(720)
@@ -274,24 +288,24 @@ Item {
             id: exportDialog
             parentWindow: card.Window.window
             options: D.FileDialog.DontUseNativeDialog
-            title: "Exportera anslutningar"
+            title: i18n.tr("Exportera anslutningar")
             fileMode: D.FileDialog.SaveFile
-            nameFilters: ["Anslutningar (*.json)"]
+            nameFilters: [i18n.tr("Anslutningar (*.json)")]
             defaultSuffix: "json"
             selectedFile: "file://" + Quickshell.env("HOME") + "/anslutningar.json"
-            acceptLabel: "Spara"
-            rejectLabel: "Avbryt"
+            acceptLabel: i18n.tr("Spara")
+            rejectLabel: i18n.tr("Avbryt")
             onAccepted: root.saveExport(selectedFile.toString())
         }
         D.FileDialog {
             id: importDialog
             parentWindow: card.Window.window
             options: D.FileDialog.DontUseNativeDialog
-            title: "Importera anslutningar"
+            title: i18n.tr("Importera anslutningar")
             fileMode: D.FileDialog.OpenFile
-            nameFilters: ["Anslutningar (*.json)", "Alla filer (*)"]
-            acceptLabel: "Öppna"
-            rejectLabel: "Avbryt"
+            nameFilters: [i18n.tr("Anslutningar (*.json)"), i18n.tr("Alla filer (*)")]
+            acceptLabel: i18n.tr("Öppna")
+            rejectLabel: i18n.tr("Avbryt")
             onAccepted: root.importProfiles(selectedFile.toString())
         }
         Rectangle {
@@ -301,6 +315,7 @@ Item {
             Keys.onEscapePressed: { if (root.transferring) root.cancelTransfer(); else if (root.editing) root.cancelEdit(); else root.dismiss() }
             TransferPanel {
                 id: transferPanel
+                i18n: root.languageState
                 anchors.fill: parent
                 visible: root.transferring
                 busy: transferProcess.running
@@ -312,6 +327,7 @@ Item {
             }
             ProfileEditor {
                 id: profileEditor
+                i18n: root.languageState
                 anchors.fill: parent
                 visible: root.editing
                 editingExisting: root.editId !== ""
@@ -329,15 +345,15 @@ Item {
                 spacing: Style.space(15)
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: "Anslutningar"; font.pixelSize: root.bodySize + 7; Layout.fillWidth: true }
-                    Action { text: "+ Lägg till"; onClicked: root.editProfile(true) }
-                    Action { text: "Stäng"; onClicked: root.dismiss() }
+                    Label { text: i18n.tr("Anslutningar"); font.pixelSize: root.bodySize + 7; Layout.fillWidth: true }
+                    Action { text: i18n.tr("+ Lägg till"); onClicked: root.editProfile(true) }
+                    Action { text: i18n.tr("Stäng"); onClicked: root.dismiss() }
                 }
                 C.TextField {
                     id: search
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.space(42)
-                    placeholderText: "Sök kund eller dator…"
+                    placeholderText: i18n.tr("Sök kund eller dator…")
                     placeholderTextColor: root.dim
                     color: root.fg
                     font.family: Style.font.menuFamily
@@ -376,7 +392,7 @@ Item {
                                 property bool groupStart: index === 0 || !!root.filtered[index - 1].favorite !== !!modelData.favorite
                                 Label {
                                     visible: row.groupStart
-                                    text: row.modelData.favorite ? "FAVORITER" : "DATORER"
+                                    text: row.modelData.favorite ? i18n.tr("FAVORITER") : i18n.tr("DATORER")
                                     color: root.dim
                                     font.pixelSize: root.bodySize - 2
                                     height: visible ? Style.space(30) : 0
@@ -408,7 +424,7 @@ Item {
                                         background: Item {}
                                         contentItem: Label { text: row.modelData.favorite ? "★" : "☆"; color: root.current === row.index ? Color.menu.selectedText : Color.accent; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                                         onClicked: root.favorite(row.modelData.id)
-                                        Accessible.name: "Favoritmarkera " + row.modelData.name
+                                        Accessible.name: i18n.tr("Favoritmarkera ") + row.modelData.name
                                     }
                                 }
                             }
@@ -418,44 +434,100 @@ Item {
                             anchors.centerIn: parent
                             width: parent.width
                             spacing: Style.space(12)
-                            Label { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: root.profiles.length ? "Ingen dator matchar sökningen." : "Din första anslutning"; font.pixelSize: root.bodySize + 2 }
-                            Label { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: root.profiles.length ? "Prova ett annat namn." : "Lägg till din Windows-dator med\nTailscale-IP och användarnamn."; wrapMode: Text.Wrap; color: root.dim }
-                            Action { anchors.horizontalCenter: parent.horizontalCenter; visible: !root.profiles.length; text: "+ Lägg till dator"; onClicked: root.editProfile(true) }
+                            Label { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: root.profiles.length ? i18n.tr("Ingen dator matchar sökningen.") : i18n.tr("Din första anslutning"); font.pixelSize: root.bodySize + 2 }
+                            Label { width: parent.width; horizontalAlignment: Text.AlignHCenter; text: root.profiles.length ? i18n.tr("Prova ett annat namn.") : i18n.tr("Lägg till din Windows-dator med\nTailscale-IP och användarnamn."); wrapMode: Text.Wrap; color: root.dim }
+                            Action { anchors.horizontalCenter: parent.horizontalCenter; visible: !root.profiles.length; text: i18n.tr("+ Lägg till dator"); onClicked: root.editProfile(true) }
                         }
                     }
                     Rectangle { visible: !!root.selected; Layout.fillHeight: true; width: 1; color: root.line }
-                    ColumnLayout {
+                    C.ScrollView {
+                        id: detailsScroll
                         visible: !!root.selected
                         Layout.minimumWidth: Style.space(200)
                         Layout.maximumWidth: Math.min(Style.space(310), card.width * 0.42)
                         Layout.preferredWidth: Math.min(Style.space(310), card.width * 0.42)
                         Layout.fillHeight: true
-                        spacing: Style.space(10)
-                        Label { text: root.selected ? root.selected.customer : ""; color: root.dim; Layout.fillWidth: true }
-                        Label { text: root.selected ? root.selected.name : ""; font.pixelSize: root.bodySize + 5; Layout.fillWidth: true }
-                        Label { text: "ADRESS"; color: root.dim; font.pixelSize: root.bodySize - 3; Layout.topMargin: Style.space(12) }
-                        Label { text: root.selected ? root.selected.host : ""; wrapMode: Text.WrapAnywhere; elide: Text.ElideNone; Layout.fillWidth: true }
-                        Label { text: "ANVÄNDARE"; color: root.dim; font.pixelSize: root.bodySize - 3; Layout.topMargin: Style.space(8) }
-                        Label { text: root.selected ? root.selected.username : ""; wrapMode: Text.WrapAnywhere; elide: Text.ElideNone; Layout.fillWidth: true }
-                        Label { text: "Upplösning: " + (root.selected && root.selected.resolution && root.selected.resolution !== "auto" ? root.selected.resolution.replace("x", " × ") : "Automatisk"); color: root.dim; Layout.fillWidth: true; wrapMode: Text.Wrap; elide: Text.ElideNone }
-                        Rectangle { Layout.fillWidth: true; height: 1; color: root.line; Layout.topMargin: Style.space(10); Layout.bottomMargin: Style.space(7) }
-                        Label { text: root.selected && root.selected.vpn ? root.selected.vpn : "Ingen VPN angiven"; Layout.fillWidth: true }
-                        Label { text: root.selected ? (root.selected.notes || (root.selected.vpn ? "Anslut separat innan du öppnar fjärrskrivbordet." : "Direkt RDP-anslutning.")) : ""; color: root.dim; wrapMode: Text.Wrap; elide: Text.ElideNone; Layout.fillWidth: true }
-                        Item { Layout.fillHeight: true }
-                        Label { text: !root.keyringAvailable ? "Nyckelringen är inte tillgänglig." : (root.selected && root.savedPasswords[root.selected.id] ? "Lösenord sparat i nyckelringen." : "Lösenord anges vid anslutning."); color: root.dim; font.pixelSize: root.bodySize - 2; Layout.fillWidth: true; wrapMode: Text.Wrap }
-                        Action { text: "Lösenord…"; Layout.fillWidth: true; enabled: !credentialProcess.running; onClicked: root.manageCredentials(root.selected.id) }
-                        Action { text: "Anslut  ↵"; Layout.fillWidth: true; onClicked: root.launch() }
-                        Action { text: "Redigera profil"; Layout.fillWidth: true; onClicked: root.editProfile(false) }
+                        Layout.minimumHeight: 0
+                        clip: true
+                        contentWidth: availableWidth
+                        C.ScrollBar.horizontal.policy: C.ScrollBar.AlwaysOff
+                        ColumnLayout {
+                            width: detailsScroll.availableWidth
+                            height: Math.max(implicitHeight, detailsScroll.availableHeight)
+                            spacing: Style.space(10)
+                            C.ScrollView {
+                                id: detailTextScroll
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                Layout.preferredHeight: 0
+                                Layout.minimumHeight: Style.space(80)
+                                clip: true
+                                contentWidth: availableWidth
+                                C.ScrollBar.horizontal.policy: C.ScrollBar.AlwaysOff
+                                ColumnLayout {
+                                    width: detailTextScroll.availableWidth
+                                    spacing: Style.space(10)
+                                    Label { text: root.selected ? root.selected.customer : ""; color: root.dim; Layout.fillWidth: true }
+                                    Label { text: root.selected ? root.selected.name : ""; font.pixelSize: root.bodySize + 5; Layout.fillWidth: true }
+                                    Label { text: i18n.tr("ADRESS"); color: root.dim; font.pixelSize: root.bodySize - 3; Layout.topMargin: Style.space(12) }
+                                    Label { text: root.selected ? root.selected.host : ""; wrapMode: Text.WrapAnywhere; elide: Text.ElideNone; Layout.fillWidth: true }
+                                    Label { text: i18n.tr("ANVÄNDARE"); color: root.dim; font.pixelSize: root.bodySize - 3; Layout.topMargin: Style.space(8) }
+                                    Label { text: root.selected ? root.selected.username : ""; wrapMode: Text.WrapAnywhere; elide: Text.ElideNone; Layout.fillWidth: true }
+                                    Label { text: i18n.tr("Upplösning: ") + (root.selected && root.selected.resolution && root.selected.resolution !== "auto" ? root.selected.resolution.replace("x", " × ") : i18n.tr("Automatisk")); color: root.dim; Layout.fillWidth: true; wrapMode: Text.Wrap; elide: Text.ElideNone }
+                                    Rectangle { Layout.fillWidth: true; height: 1; color: root.line; Layout.topMargin: Style.space(10); Layout.bottomMargin: Style.space(7) }
+                                    Label { text: root.selected && root.selected.vpn ? root.selected.vpn : i18n.tr("Ingen VPN angiven"); Layout.fillWidth: true }
+                                    Label { text: root.selected ? (root.selected.notes || (root.selected.vpn ? i18n.tr("Anslut separat innan du öppnar fjärrskrivbordet.") : i18n.tr("Direkt RDP-anslutning."))) : ""; color: root.dim; wrapMode: Text.Wrap; elide: Text.ElideNone; Layout.fillWidth: true }
+                                }
+                            }
+                            Label { text: !root.keyringAvailable ? i18n.tr("Nyckelringen är inte tillgänglig.") : (root.selected && root.savedPasswords[root.selected.id] ? i18n.tr("Lösenord sparat i nyckelringen.") : i18n.tr("Lösenord anges vid anslutning.")); color: root.dim; font.pixelSize: root.bodySize - 2; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                            Action { text: i18n.tr("Lösenord…"); Layout.fillWidth: true; enabled: !credentialProcess.running; onClicked: root.manageCredentials(root.selected.id) }
+                            Action { text: i18n.tr("Anslut  ↵"); Layout.fillWidth: true; onClicked: root.launch() }
+                            Action { text: i18n.tr("Redigera profil"); Layout.fillWidth: true; onClicked: root.editProfile(false) }
+                        }
                     }
                 }
                 Rectangle { height: 1; Layout.fillWidth: true; color: root.line }
                 RowLayout {
                     Layout.fillWidth: true
-                    Action { text: "Importera…"; enabled: !transferProcess.running; onClicked: root.chooseImport() }
-                    Action { text: "Exportera…"; enabled: root.profiles.length > 0 && !transferProcess.running; onClicked: root.exportProfiles() }
+                    Action { text: i18n.tr("Importera…"); enabled: !transferProcess.running; onClicked: root.chooseImport() }
+                    Action { text: i18n.tr("Exportera…"); enabled: root.profiles.length > 0 && !transferProcess.running; onClicked: root.exportProfiles() }
                     Item { Layout.fillWidth: true }
+                    C.ComboBox {
+                        id: languageChoice
+                        Layout.preferredWidth: Style.space(140)
+                        Layout.preferredHeight: Style.space(38)
+                        model: ["Svenska", "English"]
+                        currentIndex: i18n.language === "en" ? 1 : 0
+                        enabled: !i18n.busy && !transferProcess.running
+                        Accessible.name: i18n.tr("Språk")
+                        onActivated: i18n.choose(currentIndex === 1 ? "en" : "sv")
+                        contentItem: Label { text: languageChoice.displayText; verticalAlignment: Text.AlignVCenter; leftPadding: Style.space(10); rightPadding: Style.space(25) }
+                        indicator: Label { text: "▾"; anchors.right: parent.right; anchors.rightMargin: Style.space(9); anchors.verticalCenter: parent.verticalCenter }
+                        background: Rectangle { color: root.bg; border.color: languageChoice.activeFocus ? Color.accent : root.line; radius: Style.cornerRadius }
+                        delegate: C.ItemDelegate {
+                            required property string modelData
+                            required property int index
+                            width: languageChoice.width
+                            implicitHeight: Style.space(38)
+                            contentItem: Label { text: modelData; verticalAlignment: Text.AlignVCenter }
+                            background: Rectangle { color: parent.highlighted ? Color.menu.selectedBackground : root.bg }
+                            highlighted: languageChoice.highlightedIndex === index
+                        }
+                        popup: C.Popup {
+                            y: -implicitHeight
+                            width: languageChoice.width
+                            implicitHeight: contentItem.implicitHeight + 2
+                            padding: 1
+                            contentItem: ListView {
+                                implicitHeight: contentHeight
+                                model: languageChoice.popup.visible ? languageChoice.delegateModel : null
+                                currentIndex: languageChoice.highlightedIndex
+                            }
+                            background: Rectangle { color: root.bg; border.color: root.line }
+                        }
+                    }
                 }
-                Label { text: "↑ ↓ välj   Enter anslut   Esc stäng   ·   Super + Tab byter arbetsyta"; font.pixelSize: root.bodySize - 2; color: root.dim; Layout.fillWidth: true }
+                Label { text: i18n.tr("↑ ↓ välj   Enter anslut   Esc stäng   ·   Super + Tab byter arbetsyta"); font.pixelSize: root.bodySize - 2; color: root.dim; Layout.fillWidth: true }
             }
         }
     }

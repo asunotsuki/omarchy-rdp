@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0
+
+- Switch between Swedish and English in the picker; remember the choice across launches.
+- Translate profile editing, import/export, password dialogs, certificate prompts and helper messages.
+- Preserve user-entered profile data and keep the language menu accessible in small windows.
+- Share one translation catalog between QML and Python, with language regression tests.
+
 ## 0.6.1
 
 - Package the plugin for Git-based installation and downloadable ZIP releases.
