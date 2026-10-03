@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "connections": [
+    {
+      "id": "windows-dev",
+      "name": "Windows dev",
+      "customer": "Egna maskiner",
+      "host": "192.0.2.10",
+      "username": "developer",
+      "vpn": "Tailscale",
+      "notes": "Anslut Tailscale separat före RDP.",
+      "favorite": true
+    }
+  ]
+}

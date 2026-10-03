@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "david.rdp",
+  "name": "Anslutningar",
+  "version": "0.6.1",
+  "author": "David",
+  "license": "MIT",
+  "description": "Sökbara RDP-profiler med VPN-anteckningar och separata arbetsytor.",
+  "kinds": [
+    "overlay",
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "overlay": "PickerWindow.qml",
+    "barWidget": "Indicator.qml"
+  },
+  "barWidget": {
+    "displayName": "Anslutningar",
+    "category": "Network",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {},
+    "schema": []
+  }
+}

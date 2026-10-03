@@ -1,0 +1,15 @@
+# Local test harness and generated data are not part of the plugin.
+.qa/
+__pycache__/
+*.py[cod]
+dist/
+backups/
+.env
+.env.*
+*.log
+*.pem
+*.key
+# Connection exports must never be included accidentally.
+*.json
+!manifest.json
+!connections.example.json
