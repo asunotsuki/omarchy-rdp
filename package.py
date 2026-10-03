@@ -23,7 +23,7 @@ def build(source):
             raise ValueError('Missing or symlinked release file: ' + name)
     directory = source / 'dist'
     directory.mkdir(exist_ok=True)
-    stem = 'omarchy-rdp-' + version
+    stem = 'deskquest-' + version
     archive = directory / (stem + '.zip')
     with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as out:
         for name in RELEASE_FILES:

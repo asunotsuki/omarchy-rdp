@@ -14,7 +14,7 @@ BarWidget {
         anchors.fill: parent
         bar: root.bar
         text: "\uf108"
-        tooltipText: i18n.tr("Anslutningar · Super + R")
+        tooltipText: "DeskQuest · Super + R"
         onPressed: Quickshell.execDetached(["omarchy-shell", "shell", "toggle", "david.rdp"])
     }
 }

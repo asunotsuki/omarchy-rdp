@@ -1,4 +1,4 @@
-# Publishing
+# Publishing DeskQuest
 
 The public repository is https://github.com/asunotsuki/omarchy-rdp.
 The plugin ID is `david.rdp` and remains stable across releases.
@@ -12,7 +12,7 @@ The plugin ID is `david.rdp` and remains stable across releases.
 4. Commit the reviewed files and push the `main` branch. Use your normal
    Git/GitHub credentials.
 5. Tag that commit `vVERSION`, push the tag, and create the matching GitHub release.
-   Attach `dist/omarchy-rdp-VERSION.zip` and its `.sha256` checksum.
+   Attach `dist/deskquest-VERSION.zip` and its `.sha256` checksum.
 
 No remote URL is configured by the packaging script. It builds locally and
 does not upload, tag, commit or publish anything.

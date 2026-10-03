@@ -12,6 +12,7 @@ import uuid
 
 sys.dont_write_bytecode = True
 PLUGIN_ID = 'david.rdp'
+# Keep legacy markers so existing installations update the same block.
 BEGIN = '-- BEGIN Anslutningar (david.rdp)'
 END = '-- END Anslutningar (david.rdp)'
 FILES = ('manifest.json', 'ProfileEditor.qml', 'TransferPanel.qml', 'PickerWindow.qml',
@@ -19,10 +20,10 @@ FILES = ('manifest.json', 'ProfileEditor.qml', 'TransferPanel.qml', 'PickerWindo
          'rdp.py', 'credentials.py', 'krb5.conf', 'rdp-bindings.lua',
          'README.md', 'LICENSE', 'CHANGELOG.md', 'install.py')
 BLOCK = (BEGIN + '\n'
-         'o.bind("SUPER + R", "Anslutningar", "omarchy-shell shell toggle david.rdp")\n'
+         'o.bind("SUPER + R", "DeskQuest", "omarchy-shell shell toggle david.rdp")\n'
          'dofile(os.getenv("HOME") .. "/.config/omarchy/plugins/david.rdp/rdp-bindings.lua")\n'
          + END)
-DESKTOP = ('[Desktop Entry]\nType=Application\nName=Anslutningar\n'
+DESKTOP = ('[Desktop Entry]\nType=Application\nName=DeskQuest\n'
            'Comment=RDP till dina datorer\nExec=omarchy-shell shell toggle david.rdp\n'
            'Icon=preferences-desktop-remote-desktop\nTerminal=false\nCategories=Network;RemoteAccess;\n')
 
@@ -30,11 +31,11 @@ DESKTOP = ('[Desktop Entry]\nType=Application\nName=Anslutningar\n'
 def integration_text(text, remove=False):
     counts = text.count(BEGIN), text.count(END)
     if counts not in ((0, 0), (1, 1)):
-        raise ValueError('The Anslutningar shortcut block is malformed; nothing was changed.')
+        raise ValueError('The DeskQuest shortcut block is malformed; nothing was changed.')
     if counts == (1, 1):
         start, end = text.index(BEGIN), text.index(END)
         if end < start:
-            raise ValueError('The Anslutningar shortcut block is malformed; nothing was changed.')
+            raise ValueError('The DeskQuest shortcut block is malformed; nothing was changed.')
         return text[:start] + ('' if remove else BLOCK) + text[end + len(END):]
     return text if remove else text.rstrip() + '\n\n' + BLOCK + '\n'
 

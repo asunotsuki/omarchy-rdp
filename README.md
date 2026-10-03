@@ -1,11 +1,15 @@
-# Anslutningar — Omarchy RDP
+# DeskQuest
+
+*RDP connections for Omarchy.*
 
 A small Swedish/English connection picker for Omarchy, powered by FreeRDP. Search by
 customer or computer, mark favorites, and open each Windows session fullscreen
 on its own workspace. The picker is a normal tiled window.
 
 This is an **Omarchy shell plugin** for Quickshell, not a Hyprland C++ plugin.
-The plugin ID is `david.rdp` regardless of who installs it.
+Previously named **Anslutningar**. The plugin ID `david.rdp`, configuration
+paths and keyring identifiers remain unchanged, so existing connections, saved
+passwords and language preferences continue to work after updating.
 
 ## Requirements
 
@@ -65,7 +69,7 @@ plugin's RDP windows is focused, and cycle local windows otherwise.
 
 ## Install a ZIP release
 
-Extract `omarchy-rdp-VERSION.zip`, open a terminal in the extracted directory,
+Extract `deskquest-VERSION.zip`, open a terminal in the extracted directory,
 and run the same commands starting with `python install.py --check` above.
 The installer copies the plugin to `~/.config/omarchy/plugins/david.rdp/`.
 This method does not create a Git checkout; update it by extracting the next
@@ -103,7 +107,7 @@ from `~/.config/hypr/bindings.lua` and the `omarchy-rdp.desktop` launcher first.
   Password/certificate dialogs and helper messages use the saved language when
   they open; already running dialogs retain their original language. Standard
   toolkit file-picker controls may follow the desktop language.
-- Open with **Super+R**, the monitor icon in the bar, or **Anslutningar** in
+- Open with **Super+R**, the monitor icon in the bar, or **DeskQuest** in
   the application launcher. Search, use ↑/↓ and Enter, or double-click a row.
 - **Lägg till** and **Redigera profil** share the same inline editor. Choose a
   resolution preset, a custom size, or **Automatisk** for dynamic resizing.

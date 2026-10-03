@@ -46,7 +46,7 @@ class Keyring:
     def store(self, profile, password):
         check_password(password)
         ok = self.call(Secret.password_store_sync, SCHEMA, self.attributes(profile),
-                       Secret.COLLECTION_DEFAULT, tr('Anslutningar · ') + profile['name'], password, None)
+                       Secret.COLLECTION_DEFAULT, 'DeskQuest · ' + profile['name'], password, None)
         if not ok:
             raise KeyringError(tr('Lösenordet sparades inte. Nyckelringen kan vara låst eller upplåsningen avbruten.'))
 

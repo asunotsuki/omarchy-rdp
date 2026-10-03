@@ -1,6 +1,4 @@
 {
-  "Anslutningar": "Connections",
-  "Anslutningar · Super + R": "Connections · Super + R",
   "Egna maskiner": "My computers",
   "Redigera anslutning": "Edit connection",
   "Ny anslutning": "New connection",
@@ -156,7 +154,6 @@
   "Kunde inte starta RDP-sessionen: ": "Could not start the RDP session: ",
   "Profilen finns inte längre.": "The profile no longer exists.",
   "Nyckelringen kunde inte öppnas. Lås upp den och försök igen.": "The keyring could not be opened. Unlock it and try again.",
-  "Anslutningar · ": "Connections · ",
   "Lösenordet sparades inte. Nyckelringen kan vara låst eller upplåsningen avbruten.": "The password was not saved. The keyring may be locked or unlocking may have been cancelled.",
   "Lösenordet kunde inte tas bort. Lås upp nyckelringen och försök igen.": "The password could not be removed. Unlock the keyring and try again.",
   "Ange ett lösenord utan radbrytningar.": "Enter a password without line breaks.",

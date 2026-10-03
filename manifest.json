@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "david.rdp",
-  "name": "Anslutningar",
-  "version": "0.7.0",
+  "name": "DeskQuest",
+  "version": "0.7.1",
   "author": "David",
   "license": "MIT",
   "description": "Swedish/English RDP picker with VPN notes and separate workspaces.",
@@ -15,7 +15,7 @@
     "barWidget": "Indicator.qml"
   },
   "barWidget": {
-    "displayName": "Anslutningar",
+    "displayName": "DeskQuest",
     "category": "Network",
     "allowMultiple": false,
     "defaultSection": "right",

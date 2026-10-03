@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1
+
+- Rename the application to DeskQuest in both languages, including the launcher, bar and notifications.
+- Keep plugin, configuration and keyring identifiers stable for existing installations.
+- Publish downloadable packages under the DeskQuest name.
+
 ## 0.7.0
 
 - Switch between Swedish and English in the picker; remember the choice across launches.

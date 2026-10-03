@@ -71,7 +71,7 @@ def dialog(kind, title, text='', extra=()):
 
 
 def notify(text):
-    run(['notify-send', tr('Anslutningar'), text])
+    run(['notify-send', 'DeskQuest', text])
 
 
 def text_value(value, label, required=False, limit=500):
@@ -626,5 +626,5 @@ if __name__ == '__main__':
     try:
         main()
     except (ValueError, RuntimeError, OSError, StopIteration, subprocess.TimeoutExpired) as error:
-        dialog('error', tr('Anslutningar'), str(error) or tr('Profilen finns inte längre.'))
+        dialog('error', 'DeskQuest', str(error) or tr('Profilen finns inte längre.'))
         sys.exit(1)

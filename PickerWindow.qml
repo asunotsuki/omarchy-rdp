@@ -278,7 +278,7 @@ Item {
     FloatingWindow {
         id: panel
         visible: false
-        title: i18n.tr("Anslutningar")
+        title: "DeskQuest"
         color: root.bg
         implicitWidth: Style.space(1000)
         implicitHeight: Style.space(720)
@@ -345,7 +345,7 @@ Item {
                 spacing: Style.space(15)
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: i18n.tr("Anslutningar"); font.pixelSize: root.bodySize + 7; Layout.fillWidth: true }
+                    Label { text: "DeskQuest"; font.pixelSize: root.bodySize + 7; Layout.fillWidth: true }
                     Action { text: i18n.tr("+ Lägg till"); onClicked: root.editProfile(true) }
                     Action { text: i18n.tr("Stäng"); onClicked: root.dismiss() }
                 }

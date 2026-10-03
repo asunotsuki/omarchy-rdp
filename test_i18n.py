@@ -22,7 +22,7 @@ class LanguageTest(unittest.TestCase):
             self.assertEqual(i18n.configure(path), 'sv')
             path.write_text('{"other":42}')
             self.assertEqual(i18n.save_language(path, 'en'), 'en')
-            self.assertEqual(i18n.tr('Anslutningar'), 'Connections')
+            self.assertEqual(i18n.tr('Språk'), 'Language')
             self.assertEqual(json.loads(path.read_text())['other'], 42)
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
             before = path.read_bytes()
@@ -30,7 +30,7 @@ class LanguageTest(unittest.TestCase):
                 i18n.save_language(path, 'unsupported')
             self.assertEqual(path.read_bytes(), before)
             i18n.save_language(path, 'sv')
-            self.assertEqual(i18n.tr('Anslutningar'), 'Anslutningar')
+            self.assertEqual(i18n.tr('Språk'), 'Språk')
 
     def test_invalid_preferences_fall_back_to_swedish(self):
         with tempfile.TemporaryDirectory() as tmp:
